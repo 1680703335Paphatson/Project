@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <title>Tenants - Smart Rental</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-[#F7F4EB] min-h-screen text-[#3D332A] font-sans">
+
+  <nav class="w-full bg-[#EFEAE0] border-b border-gray-200 px-8 py-4 flex items-center justify-between mb-4">
+    <div class="flex items-center gap-3">
+      <div class="text-[#3D332A]">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-8 h-8">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />
+        </svg>
+      </div>
+      <div>
+        <h1 class="text-lg font-bold tracking-tight">Smart Rental</h1>
+        <p class="text-xs text-gray-500">ระบบจัดการห้องเช่าคอนโด</p>
+      </div>
+    </div>
+    <div class="flex items-center gap-6 text-sm font-semibold text-gray-600">
+      <a href="{{ url_for('index') }}" class="hover:text-[#4D7254] transition">🏢 รายชื่อห้องพัก</a>
+      <a href="{{ url_for('tenants') }}" class="text-[#4D7254] font-bold border-b-2 border-[#4D7254] pb-1">👥 ผู้เช่า</a>
+      <a href="{{ url_for('payments') }}" class="hover:text-[#4D7254] transition">💰 การชำระเงิน</a>
+      <a href="{{ url_for('maintenance') }}" class="hover:text-[#4D7254] transition">🔧 แจ้งซ่อม</a>
+    </div>
+  </nav>
+
+  <main class="max-w-6xl mx-auto px-4 py-6">
+    
+    <div class="flex items-center justify-between mb-6">
+      <div>
+        <h2 class="text-xl font-bold text-gray-800">👥 รายชื่อผู้เช่าทั้งหมดในระบบ</h2>
+        <p class="text-sm text-gray-500 mt-0.5">แสดงข้อมูลประวัติผู้เช่าและสถานะสัญญาปัจจุบันสำหรับการตรวจสอบ</p>
+      </div>
+      <div class="bg-[#4D7254]/10 text-[#4D7254] px-4 py-2 rounded-xl text-sm font-bold">
+        ผู้เช่าทั้งหมด: {{ tenants|length }} ราย
+      </div>
+    </div>
+
+    <div class="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden">
+      <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse">
+          <thead>
+            <tr class="bg-[#EFEAE0] border-b border-gray-200 text-[#3D332A] text-xs font-bold uppercase tracking-wider">
+              <th class="p-4">ID</th>
+              <th class="p-4">ชื่อ - นามสกุล</th>
+              <th class="p-4">เบอร์โทรศัพท์</th>
+              <th class="p-4">อีเมล</th>
+              <th class="p-4">ห้องพักปัจจุบัน</th>
+              <th class="p-4 text-center">สถานะสัญญา</th>
+              <th class="p-4 text-center">จัดการ</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-100 text-sm text-gray-700">
+            {% for t in tenants %}
+            <tr class="hover:bg-gray-50/70 transition-colors">
+              <td class="p-4 font-mono text-xs text-gray-400">#{{ t['tenant_id'] }}</td>
+              <td class="p-4 font-semibold text-gray-900">
+                {{ t['first_name'] }} {{ t['last_name'] }}
+              </td>
+              <td class="p-4 font-mono text-xs">{{ t['phone'] or '-' }}</td>
+              <td class="p-4 text-xs text-gray-500">{{ t['email'] or '-' }}</td>
+              <td class="p-4">
+                {% if t['room_number'] %}
+                  <span class="font-semibold text-[#4D7254]">
+                    {{ t['condo_name'] }} — ห้อง {{ t['room_number'] }}
+                  </span>
+                {% else %}
+                  <span class="text-gray-400 italic">ไม่ได้เช่าห้องพัก</span>
+                {% endif %}
+              </td>
+              <td class="p-4 text-center text-xs">
+                {% if t['contract_id'] %}
+                  <span class="bg-green-100 text-green-800 px-3 py-1 rounded-full font-bold">Active</span>
+                  <div class="mt-1 text-[10px] text-gray-400 font-mono">{{ t['start_date'] }} ถึง {{ t['end_date'] }}</div>
+                {% else %}
+                  <span class="bg-gray-100 text-gray-400 px-3 py-1 rounded-full font-semibold">ไม่มีสัญญา</span>
+                {% endif %}
+              </td>
+              <td class="p-4 text-center">
+                <form method="POST" action="{{ url_for('delete_tenant', tenant_id=t['tenant_id']) }}"
+                      onsubmit="return confirm('ยืนยันลบข้อมูลผู้เช่ารายนี้?\n(สัญญาที่เกี่ยวข้องจะถูกปิดอัตโนมัติ)')">
+                  <button type="submit" class="px-3 py-1.5 bg-red-50 hover:bg-red-100 text-red-600 rounded-lg text-xs font-semibold transition">
+                    🗑️ ลบข้อมูล
+                  </button>
+                </form>
+              </td>
+            </tr>
+            {% else %}
+            <tr>
+              <td colspan="7" class="p-12 text-center text-gray-400 italic bg-gray-50/50">
+                ❌ ยังไม่มีข้อมูลผู้เช่าในระบบ
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </main>
+
+</body>
+</html>

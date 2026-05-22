@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <title>Manage Rentals - Smart Rental</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-[#F7F4EB] min-h-screen text-[#3D332A] font-sans">
+
+  <nav class="w-full bg-[#EFEAE0] border-b border-gray-200 px-8 py-4 flex items-center justify-between mb-4">
+    <div class="flex items-center gap-3">
+      <div class="text-[#3D332A]">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-8 h-8"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" /></svg>
+      </div>
+      <div class="leading-none">
+        <span class="block text-lg font-bold tracking-wider uppercase">Smart</span>
+        <span class="block text-xs font-semibold tracking-widest opacity-80 uppercase">Rentals</span>
+      </div>
+    </div>
+    <div class="flex gap-4 font-semibold text-sm">
+      <a href="{{ url_for('index') }}" class="text-[#4D7254] border-b-2 border-[#4D7254] pb-1">🏢 ห้องและสัญญา</a>
+      <a href="{{ url_for('tenants') }}" class="text-gray-500 hover:text-[#4D7254] pb-1">👥 ผู้เช่า</a>
+      <a href="{{ url_for('payments') }}" class="text-gray-500 hover:text-[#4D7254] pb-1">💰 การเงิน</a>
+      <a href="{{ url_for('maintenance') }}" class="text-gray-500 hover:text-[#4D7254] pb-1">🔧 แจ้งซ่อม</a>
+    </div>
+  </nav>
+
+  <main class="max-w-7xl mx-auto px-6 pb-12">
+    <div class="text-center mb-6">
+      <h1 class="text-2xl font-bold mb-1">Manage Rentals</h1>
+      <p class="text-sm font-medium opacity-70">ระบบจัดการห้องเช่า สัญญา การเงิน และแจ้งซ่อม </p>
+    </div>
+
+    <div class="flex justify-between items-center mb-4">
+      <h2 class="text-base font-bold flex items-center gap-2">🏢 รายการห้องทั้งหมด</h2>
+      <a href="{{ url_for('add_rental') }}" class="bg-[#4D7254] hover:bg-[#3d5b43] text-white font-semibold text-sm px-4 py-2 rounded-lg shadow-sm transition">
+        + เพิ่มห้องและผู้เช่าใหม่
+      </a>
+    </div>
+
+    <div class="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
+      <table class="w-full text-left border-collapse">
+        <thead>
+          <tr class="bg-[#EFEAE0] text-sm font-semibold border-b border-gray-200">
+            <th class="p-4 text-center w-28">Preview</th>
+            <th class="p-4">Unit Details</th>
+            <th class="p-4">Tenant</th>
+            <th class="p-4 text-center">ค่าเช่า/เดือน</th>
+            <th class="p-4 text-center">สัญญา</th>
+            <th class="p-4 text-center">Status</th>
+            <th class="p-4 text-center">Actions</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-100 text-sm">
+          {% for row in rentals %}
+          {% set room = row.room %}
+          {% set contract = row.contract %}
+          <tr class="hover:bg-[#FDFCF9] transition">
+            <td class="p-4 text-center">
+              <div class="w-20 h-14 bg-gray-100 rounded-lg mx-auto overflow-hidden flex items-center justify-center border border-gray-200">
+                {% if room['room_image_url'] %}
+                  <img src="{{ room['room_image_url'] }}" class="w-full h-full object-cover">
+                {% else %}
+                  <span class="text-xs text-gray-400">No Image</span>
+                {% endif %}
+              </div>
+            </td>
+            <td class="p-4">
+              <span class="block text-xs font-bold text-[#4D7254] tracking-wider mb-0.5">{{ room['condo_name'] }}</span>
+              <div class="font-bold text-base text-gray-900">Room {{ room['room_number'] }}</div>
+              <div class="text-gray-500 text-xs mt-0.5 flex gap-2">
+                <span>ชั้น {{ room['floor'] or '-' }}</span>
+                <span>•</span>
+                <span class="font-medium text-[#3D332A]">{{ room['room_size'] or '-' }} ตร.ม.</span>
+              </div>
+            </td>
+            <td class="p-4 font-semibold">
+              {% if contract %}
+                {{ contract['first_name'] }} {{ contract['last_name'] }}
+                <div class="text-xs text-gray-500 font-normal">{{ contract['phone'] }}</div>
+              {% else %}
+                <span class="text-gray-400 italic font-normal">ว่าง</span>
+              {% endif %}
+            </td>
+            <td class="p-4 text-center font-semibold">
+              {% if contract %}
+                {{ "{:,.0f}".format(contract['monthly_rent']) }}
+              {% else %}
+                <span class="text-gray-400">-</span>
+              {% endif %}
+            </td>
+            <td class="p-4 text-center text-xs text-gray-500">
+              {% if contract %}
+                <span class="block">{{ contract['start_date'] }}</span>
+                <span class="block text-gray-400">ถึง {{ contract['end_date'] }}</span>
+              {% else %}
+                <span class="text-gray-300">-</span>
+              {% endif %}
+            </td>
+            <td class="p-4 text-center">
+              {% if room['status'] == 'Occupied' %}
+                <span class="bg-[#A94444] text-white text-xs px-3 py-1 rounded-md font-medium">Occupied</span>
+              {% else %}
+                <span class="bg-[#4D7254] text-white text-xs px-3 py-1 rounded-md font-medium">Available</span>
+              {% endif %}
+            </td>
+            <td class="p-4 text-center">
+              <div class="flex justify-center gap-1.5">
+                <a href="{{ url_for('view_rental', room_id=room['room_id']) }}" class="p-2 bg-amber-50 hover:bg-amber-100 border border-amber-200 rounded-md text-xs font-medium text-amber-900">👁️ ดูรายละเอียด</a>
+                <a href="{{ url_for('edit_rental', room_id=room['room_id']) }}" class="p-2 bg-[#EFEAE0] hover:bg-gray-200 rounded-md text-xs">✏️</a>
+                <button type="button" onclick="openResetModal('{{ room['room_id'] }}', '{{ room['room_number'] }}')" class="p-2 bg-yellow-100 hover:bg-yellow-200 text-yellow-700 rounded-md text-xs">🔄</button>
+                <button type="button" onclick="openDeleteModal('{{ room['room_id'] }}', '{{ room['room_number'] }}')" class="p-2 bg-red-100 hover:bg-red-200 text-red-700 rounded-md text-xs">🗑️</button>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+
+  <!-- Reset Modal -->
+  <div id="resetModal" class="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 hidden flex items-center justify-center">
+    <div class="bg-white rounded-xl p-6 max-w-sm w-full mx-4 text-center">
+      <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-yellow-100 text-yellow-600 text-xl mb-4">🔄</div>
+      <h3 class="text-lg font-bold text-gray-900">สิ้นสุดสัญญา?</h3>
+      <p class="text-sm text-gray-500 mt-1">ห้อง <span id="modalResetRoomNumber" class="font-bold text-yellow-600"></span> จะเปลี่ยนเป็น Available และสัญญาจะถูกปิด</p>
+      <form id="resetForm" method="POST" class="mt-6 flex gap-3">
+        <button type="button" onclick="closeResetModal()" class="flex-1 px-4 py-2 bg-gray-100 text-gray-700 text-sm font-medium rounded-lg">ยกเลิก</button>
+        <button type="submit" class="flex-1 px-4 py-2 bg-yellow-600 hover:bg-yellow-700 text-white text-sm font-medium rounded-lg">ยืนยัน</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Delete Modal -->
+  <div id="deleteModal" class="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 hidden flex items-center justify-center">
+    <div class="bg-white rounded-xl p-6 max-w-sm w-full mx-4 text-center">
+      <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100 text-red-600 text-xl mb-4">🗑️</div>
+      <h3 class="text-lg font-bold text-gray-900">ลบห้องพักถาวร?</h3>
+      <p class="text-sm text-gray-500 mt-1">ข้อมูลทั้งหมดของห้อง <span id="modalDeleteRoomNumber" class="font-bold text-red-600"></span> รวมถึง Contracts, Payments, Maintenance จะหายถาวร</p>
+      <form id="deleteForm" method="POST" class="mt-6 flex gap-3">
+        <button type="button" onclick="closeDeleteModal()" class="flex-1 px-4 py-2 bg-gray-100 text-gray-700 text-sm font-medium rounded-lg">ยกเลิก</button>
+        <button type="submit" class="flex-1 px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-lg">ยืนยันลบ</button>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    function openResetModal(roomId, roomNumber) {
+        document.getElementById('resetForm').action = '/reset/' + roomId;
+        document.getElementById('modalResetRoomNumber').textContent = roomNumber;
+        document.getElementById('resetModal').classList.remove('hidden');
+    }
+    function closeResetModal() { document.getElementById('resetModal').classList.add('hidden'); }
+    function openDeleteModal(roomId, roomNumber) {
+        document.getElementById('deleteForm').action = '/delete/' + roomId;
+        document.getElementById('modalDeleteRoomNumber').textContent = roomNumber;
+        document.getElementById('deleteModal').classList.remove('hidden');
+    }
+    function closeDeleteModal() { document.getElementById('deleteModal').classList.add('hidden'); }
+  </script>
+</body>
+</html>

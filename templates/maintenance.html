@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <title>Maintenance - Smart Rental</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-[#F7F4EB] min-h-screen text-[#3D332A] font-sans">
+
+  <nav class="w-full bg-[#EFEAE0] border-b border-gray-200 px-8 py-4 flex items-center justify-between mb-4">
+    <div class="flex items-center gap-3">
+      <div class="text-[#3D332A]">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-8 h-8"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" /></svg>
+      </div>
+      <div class="leading-none">
+        <span class="block text-lg font-bold tracking-wider uppercase">Smart</span>
+        <span class="block text-xs font-semibold tracking-widest opacity-80 uppercase">Rentals</span>
+      </div>
+    </div>
+    <div class="flex gap-4 font-semibold text-sm">
+      <a href="{{ url_for('index') }}" class="text-gray-500 hover:text-[#4D7254] pb-1">🏢 ห้องและสัญญา</a>
+      <a href="{{ url_for('tenants') }}" class="text-gray-500 hover:text-[#4D7254] pb-1">👥 ผู้เช่า</a>
+      <a href="{{ url_for('payments') }}" class="text-gray-500 hover:text-[#4D7254] pb-1">💰 การเงิน</a>
+      <a href="{{ url_for('maintenance') }}" class="text-[#4D7254] border-b-2 border-[#4D7254] pb-1">🔧 แจ้งซ่อม</a>
+    </div>
+  </nav>
+
+  <main class="max-w-6xl mx-auto px-4 py-6 grid grid-cols-1 md:grid-cols-3 gap-6">
+
+    <div class="bg-white p-5 rounded-xl border border-gray-100 shadow-sm h-fit">
+      <h3 class="text-base font-bold mb-1">🔧 บันทึกใบแจ้งซ่อม</h3>
+      <form method="POST" class="space-y-4">
+        <div>
+          <label class="block text-xs font-medium mb-1">ห้องที่เกิดปัญหา *</label>
+          <select name="room_id" required class="w-full bg-[#F7F4EB] border rounded-lg p-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#4D7254]">
+            <option value="" disabled selected>-- เลือกหมายเลขห้อง --</option>
+            {% for rm in rooms %}
+              <option value="{{ rm['room_id'] }}">{{ rm['condo_name'] }} — ห้อง {{ rm['room_number'] }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div>
+          <label class="block text-xs font-medium mb-1">รายละเอียดปัญหา *</label>
+          <textarea name="description" rows="3" required placeholder="เช่น ท่อน้ำห้องน้ำรั่ว..." class="w-full bg-[#F7F4EB] border rounded-lg p-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#4D7254] resize-none"></textarea>
+        </div>
+        <div>
+          <label class="block text-xs font-medium mb-1">วันที่รับเรื่อง *</label>
+          <input type="date" name="request_date" required class="w-full bg-[#F7F4EB] border rounded-lg p-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#4D7254]">
+        </div>
+        <div>
+          <label class="block text-xs font-medium mb-1">สถานะ *</label>
+          <select name="status" class="w-full bg-[#F7F4EB] border rounded-lg p-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#4D7254]">
+            <option value="Pending">Pending (รอคิวช่าง)</option>
+            <option value="In Progress">In Progress (กำลังดำเนินการ)</option>
+            <option value="Completed">Completed (ซ่อมเสร็จ)</option>
+          </select>
+        </div>
+        <button type="submit" class="w-full py-2 bg-[#4D7254] hover:bg-[#3d5b43] text-white rounded-lg font-medium text-sm transition shadow-sm">บันทึกใบแจ้งซ่อม</button>
+      </form>
+    </div>
+
+    <div class="md:col-span-2 bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
+      <table class="w-full text-left border-collapse">
+        <thead>
+          <tr class="bg-[#EFEAE0] text-sm font-semibold">
+            <th class="p-4">ห้องพัก</th>
+            <th class="p-4">รายละเอียด</th>
+            <th class="p-4">วันที่แจ้ง</th>
+            <th class="p-4 text-center">สถานะ</th>
+            <th class="p-4 text-center">จัดการ</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-100 text-sm">
+          {% for req in requests %}
+          <tr>
+            <td class="p-4">
+              <span class="block text-xs text-[#4D7254] font-bold">{{ req['condo_name'] }}</span>
+              <span class="font-bold text-gray-900">ห้อง {{ req['room_number'] }}</span>
+            </td>
+            <td class="p-4">{{ req['description'] }}</td>
+            <td class="p-4 text-xs text-gray-500">{{ req['request_date'] }}</td>
+            <td class="p-4 text-center">
+              {% if req['status'] == 'Pending' %}
+                <span class="bg-red-100 text-red-800 text-xs px-2.5 py-1 rounded-full font-bold">Pending</span>
+              {% elif req['status'] == 'In Progress' %}
+                <span class="bg-yellow-100 text-yellow-800 text-xs px-2.5 py-1 rounded-full font-bold">In Progress</span>
+              {% else %}
+                <span class="bg-green-100 text-green-800 text-xs px-2.5 py-1 rounded-full font-bold">Completed</span>
+              {% endif %}
+            </td>
+            <td class="p-4 text-center text-xs space-x-1">
+              <a href="{{ url_for('update_maintenance', request_id=req['request_id'], status='In Progress') }}" class="text-amber-600 hover:underline font-semibold">🔧 เริ่มซ่อม</a>
+              <a href="{{ url_for('update_maintenance', request_id=req['request_id'], status='Completed') }}" class="text-green-600 hover:underline font-semibold">✅ เสร็จ</a>
+            </td>
+          </tr>
+          {% else %}
+          <tr>
+            <td colspan="5" class="p-8 text-center text-gray-400 italic">ไม่มีบันทึกการแจ้งซ่อมในขณะนี้</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </main>
+</body>
+</html>
